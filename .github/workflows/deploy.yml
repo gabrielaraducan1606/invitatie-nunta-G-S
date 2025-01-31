@@ -1,24 +1,36 @@
-name: Build and deploy to GitHub Pages
+name: Deploy to GitHub Pages & Render
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main  # Se va executa doar când faci push pe branch-ul `main`
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout 🛎️
-        uses: actions/checkout@v2.3.1
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v3
 
-      - name: Install, lint, build 🔧
+      # 🔹 Instalare și build pentru Frontend
+      - name: 🚀 Install and build frontend
         run: |
+          cd frontend
           npm install
-          npm run lint:js
-          npm run build
+          npm run build  # Dacă trebuie builduit pentru deploy
 
-      - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@4.1.0
+      # 🔹 Instalare și pornire pentru Backend
+      - name: 🔥 Install and start backend
+        run: |
+          cd backend
+          npm install
+          npm start  # Sau `nodemon server.js` dacă folosești nodemon
+
+      # 🔹 Deploy pentru GitHub Pages (Dacă folosești)
+      - name: 📤 Deploy to GitHub Pages
+        if: success()
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          branch: gh-pages
-          folder: build
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./frontend/build  # Dacă frontend-ul este React/Vite
